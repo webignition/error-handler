@@ -4,23 +4,45 @@ declare(strict_types=1);
 
 namespace webignition\ErrorHandler;
 
+use Psr\Log\LoggerInterface;
 use webignition\ErrorHandler\ExceptionExaminer\AlwaysFatalExaminer;
 use webignition\ErrorHandler\ExceptionExaminer\ExceptionExaminerInterface;
+use webignition\ErrorHandler\ExceptionLogEntryFactory\Factory;
+use webignition\ErrorHandler\ExceptionLogEntryFactory\FactoryInterface;
 
 class ErrorHandler
 {
     private ExceptionExaminerInterface $exceptionExaminer;
+    private ?LoggerInterface $logger = null;
+    private FactoryInterface $exceptionLogEntryFactory;
     private ?\ErrorException $lastError = null;
 
-    public function __construct(?ExceptionExaminerInterface $exceptionExaminer = null)
+    public function __construct()
     {
-        $this->exceptionExaminer = $exceptionExaminer ?? new AlwaysFatalExaminer();
+        $this->exceptionExaminer = new AlwaysFatalExaminer();
+        $this->exceptionLogEntryFactory = new Factory();
     }
 
     public function withExceptionExaminer(ExceptionExaminerInterface $exceptionExaminer): self
     {
         $new = clone $this;
         $new->exceptionExaminer = $exceptionExaminer;
+
+        return $new;
+    }
+
+    public function withLogger(LoggerInterface $logger): self
+    {
+        $new = clone $this;
+        $new->logger = $logger;
+
+        return $new;
+    }
+
+    public function withExceptionLogEntryFactory(FactoryInterface $factory): self
+    {
+        $new = clone $this;
+        $new->exceptionLogEntryFactory = $factory;
 
         return $new;
     }
@@ -50,6 +72,13 @@ class ErrorHandler
         if ($lastError instanceof \ErrorException) {
             if ($this->exceptionExaminer->isFatal($lastError)) {
                 throw $lastError;
+            }
+
+            if ($this->logger instanceof LoggerInterface && false === $this->exceptionExaminer->isIgnored($lastError)) {
+                $this->logger->error(
+                    $this->exceptionLogEntryFactory->createMessage($lastError),
+                    $this->exceptionLogEntryFactory->createContext($lastError)
+                );
             }
         }
     }

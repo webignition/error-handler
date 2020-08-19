@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace webignition\ErrorHandler\ExceptionExaminer;
+namespace webignition\ErrorHandler\Tests\Services;
 
-class AlwaysFatalExaminer implements ExceptionExaminerInterface
+use webignition\ErrorHandler\ExceptionExaminer\ExceptionExaminerInterface;
+
+class AlwaysRecoverableExaminer implements ExceptionExaminerInterface
 {
     public function isFatal(\Exception $exception): bool
     {
-        return true;
+        return false;
     }
 
     public function isIgnored(\Exception $exception): bool
@@ -18,6 +20,6 @@ class AlwaysFatalExaminer implements ExceptionExaminerInterface
 
     public function isRecoverable(\Exception $exception): bool
     {
-        return false;
+        return true;
     }
 }
