@@ -7,28 +7,22 @@ namespace webignition\ErrorHandler\Tests\Unit;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use webignition\ErrorHandler\ErrorHandler;
+use webignition\ErrorHandler\Tests\Services\NeverFatalExaminer;
 use webignition\ObjectReflector\ObjectReflector;
 
 class ErrorHandlerTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
-    private ErrorHandler $errorHandler;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->errorHandler = new ErrorHandler();
-    }
-
     public function testStartStop()
     {
+        $errorHandler = new ErrorHandler();
+
         self::assertNull(
-            ObjectReflector::getProperty($this->errorHandler, 'lastError')
+            ObjectReflector::getProperty($errorHandler, 'lastError')
         );
 
-        $this->errorHandler->start();
+        $errorHandler->start();
         trigger_error('error message content');
 
         $expectedErrorException = new \ErrorException(
@@ -39,14 +33,43 @@ class ErrorHandlerTest extends TestCase
 
         self::assertEquals(
             $expectedErrorException,
-            ObjectReflector::getProperty($this->errorHandler, 'lastError')
+            ObjectReflector::getProperty($errorHandler, 'lastError')
         );
 
         $this->expectExceptionObject($expectedErrorException);
-        $this->errorHandler->stop();
+        $errorHandler->stop();
 
         self::assertNull(
-            ObjectReflector::getProperty($this->errorHandler, 'lastError')
+            ObjectReflector::getProperty($errorHandler, 'lastError')
+        );
+    }
+
+    public function testStartStopWithNonFatalExaminer()
+    {
+        $errorHandler = new ErrorHandler(new NeverFatalExaminer());
+
+        self::assertNull(
+            ObjectReflector::getProperty($errorHandler, 'lastError')
+        );
+
+        $errorHandler->start();
+        trigger_error('error message content');
+
+        $expectedErrorException = new \ErrorException(
+            'error message content',
+            0,
+            E_USER_NOTICE
+        );
+
+        self::assertEquals(
+            $expectedErrorException,
+            ObjectReflector::getProperty($errorHandler, 'lastError')
+        );
+
+        $errorHandler->stop();
+
+        self::assertNull(
+            ObjectReflector::getProperty($errorHandler, 'lastError')
         );
     }
 }
