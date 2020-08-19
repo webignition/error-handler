@@ -1,7 +1,0 @@
-parameters:
-  sets:
-    - 'clean-code'
-    - 'psr-12'
-  paths:
-    - 'src'
-    - 'tests'
