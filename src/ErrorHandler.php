@@ -4,9 +4,26 @@ declare(strict_types=1);
 
 namespace webignition\ErrorHandler;
 
+use webignition\ErrorHandler\ExceptionExaminer\AlwaysFatalExaminer;
+use webignition\ErrorHandler\ExceptionExaminer\ExceptionExaminerInterface;
+
 class ErrorHandler
 {
+    private ExceptionExaminerInterface $exceptionExaminer;
     private ?\ErrorException $lastError = null;
+
+    public function __construct(?ExceptionExaminerInterface $exceptionExaminer = null)
+    {
+        $this->exceptionExaminer = $exceptionExaminer ?? new AlwaysFatalExaminer();
+    }
+
+    public function withExceptionExaminer(ExceptionExaminerInterface $exceptionExaminer): self
+    {
+        $new = clone $this;
+        $new->exceptionExaminer = $exceptionExaminer;
+
+        return $new;
+    }
 
     public function start(): void
     {
@@ -31,7 +48,9 @@ class ErrorHandler
         $this->lastError = null;
 
         if ($lastError instanceof \ErrorException) {
-            throw $lastError;
+            if ($this->exceptionExaminer->isFatal($lastError)) {
+                throw $lastError;
+            }
         }
     }
 }
