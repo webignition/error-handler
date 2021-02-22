@@ -51,11 +51,13 @@ class ErrorHandler
     {
         $this->lastError = null;
 
-        set_error_handler(function (int $severity, string $errorMessage, ?string $file, ?int $line) {
+        set_error_handler(function (int $severity, string $errorMessage, ?string $file, ?int $line): bool {
             $file = $file ?? '';
             $line = $line ?? 0;
 
             $this->lastError = new \ErrorException($errorMessage, 0, $severity, $file, $line);
+
+            return true;
         });
     }
 
