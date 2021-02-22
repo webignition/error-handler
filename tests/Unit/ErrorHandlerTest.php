@@ -15,7 +15,7 @@ class ErrorHandlerTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
-    public function testStartStop()
+    public function testStartStop(): void
     {
         $errorHandler = new ErrorHandler();
 
@@ -45,7 +45,7 @@ class ErrorHandlerTest extends TestCase
         );
     }
 
-    public function testStartStopWithNonFatalExaminer()
+    public function testStartStopWithNonFatalExaminer(): void
     {
         $errorHandler = new ErrorHandler();
         $errorHandler = $errorHandler->withExceptionExaminer(new AlwaysRecoverableExaminer());
@@ -75,7 +75,7 @@ class ErrorHandlerTest extends TestCase
         );
     }
 
-    public function testStartStopWithLogging()
+    public function testStartStopWithLogging(): void
     {
         $triggeredErrorContent = 'error message content';
         $expectedErrorSeverity = E_USER_NOTICE;
