@@ -95,7 +95,8 @@ class ErrorHandlerTest extends TestCase
                 self::assertSame(__FILE__, $context['file']);
 
                 return true;
-            });
+            })
+        ;
 
         $errorHandler = new ErrorHandler();
         $errorHandler = $errorHandler->withExceptionExaminer(new AlwaysRecoverableExaminer());
